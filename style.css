@@ -1,4 +1,4 @@
-<style>
+
 :root{
   --bg:#0a0d10;
   --bg-panel:#11151a;
@@ -177,4 +177,4 @@ button.run:disabled{opacity:.5; cursor:not-allowed;}
 
 footer{text-align:center; font-size:10.5px; color:var(--text-faint); margin-top:34px; line-height:1.8;}
 
-</style>
+
