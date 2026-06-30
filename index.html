@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTINEL — AI Trading Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark">S</div>
+      <div>
+        <h1>SENTINEL</h1>
+        <p>AI Trading Analysis · Twelvedata</p>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:18px;">
+      <div class="scan"></div>
+      <div class="status-pill"><span class="dot" id="liveDot"></span><span id="liveText">idle</span></div>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-title">Konfigurasi Analisis</div>
+    <div class="grid">
+      <div class="field">
+        <label>Twelvedata API Key</label>
+        <input type="password" id="apiKey" placeholder="masukkan API key kamu" value="c2a9e1bf8cc34b799d9808465113a66b">
+      </div>
+      <div class="field">
+        <label>Symbol</label>
+        <input type="text" id="symbol" placeholder="XAU/USD" value="XAU/USD">
+      </div>
+      <div class="field">
+        <label>Timeframe</label>
+        <select id="interval">
+          <option value="5min">5 Menit</option>
+          <option value="15min" selected>15 Menit</option>
+          <option value="30min">30 Menit</option>
+          <option value="1h">1 Jam</option>
+          <option value="4h">4 Jam</option>
+          <option value="1day">1 Hari</option>
+        </select>
+      </div>
+      <button class="run" id="runBtn">▶ Analisis</button>
+    </div>
+    <div class="hint">API key tersimpan hanya di browser kamu (tidak dikirim ke server manapun selain api.twelvedata.com). Dapatkan key gratis di <a href="https://twelvedata.com" target="_blank">twelvedata.com</a>. Free plan memiliki limit ±8 request/menit.</div>
+  </div>
+
+  <div class="msg error" id="errBox"></div>
+  <div class="msg loading" id="loadBox">Mengambil data OHLC dan menjalankan pipeline analisis…</div>
+
+  <div id="result">
+
+    <div class="headline" id="headline">
+      <div class="headline-row">
+        <div>
+          <div class="symbol-line"><b id="hSymbol">—</b> · <span id="hTf">—</span> · <span id="hTime">—</span></div>
+          <div class="direction" id="hDir">—</div>
+          <div class="subline" id="hSub">—</div>
+          <div class="status-tag" id="hStatus">—</div>
+        </div>
+        <div class="conf-box">
+          <div class="conf-num" id="confNum">—</div>
+          <div class="conf-label">Confidence Score</div>
+          <div class="conf-bar"><div class="conf-fill" id="confFill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="k">Trend (EMA50 / EMA200)</div>
+        <div class="v" id="cTrend">—</div>
+        <div class="sub" id="cTrendSub">—</div>
+      </div>
+      <div class="card">
+        <div class="k">Market Structure</div>
+        <div class="v" id="cStruct">—</div>
+        <div class="sub" id="cStructSub">—</div>
+      </div>
+      <div class="card">
+        <div class="k">Momentum (RSI / ATR)</div>
+        <div class="v" id="cMom">—</div>
+        <div class="sub" id="cMomSub">—</div>
+      </div>
+    </div>
+
+    <div class="levels">
+      <div class="level-row"><span class="lk">ZONE ENTRY</span><span class="lv entry" id="lZone">—</span></div>
+      <div class="level-row"><span class="lk">STOP LOSS</span><span class="lv sl" id="lSL">—</span></div>
+      <div class="level-row"><span class="lk">TAKE PROFIT</span><span class="lv tp" id="lTP">—</span></div>
+      <div class="level-row"><span class="lk">RISK / REWARD</span><span class="lv" id="lRR">1 : 2</span></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="panel-title">Chart &amp; Level Visual</div>
+      <div id="chartHolder"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:#f0b429"></i> Close</span>
+        <span><i class="sw" style="background:#3da9fc"></i> EMA 50</span>
+        <span><i class="sw" style="background:#b06bf2"></i> EMA 200</span>
+        <span><i class="sw" style="background:#28d97c"></i> Entry / TP</span>
+        <span><i class="sw" style="background:#ff5470"></i> Stop Loss</span>
+      </div>
+    </div>
+
+    <div class="checklist">
+      <div class="panel-title">Checklist Entry</div>
+      <div id="checklistItems"></div>
+    </div>
+
+    <div class="chart-box">
+      <div class="panel-title">Output Mentah</div>
+      <div class="raw" id="rawOutput"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    SENTINEL tidak memberikan saran finansial. Semua output adalah hasil perhitungan teknikal otomatis dan bukan jaminan profit. Selalu gunakan manajemen risiko.
+  </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
