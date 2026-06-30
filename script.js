@@ -114,8 +114,10 @@ function runAnalysis(candles){
   }
 
   // 1. TREND FILTER
+  // Bandingkan 2 candle TERTUTUP TERAKHIR yang berurutan (last vs cand),
+  // bukan melompati satu candle, supaya deteksi crossing akurat.
   const diffNow = ema50[last]-ema200[last];
-  const diffPrev = ema50[prior]-ema200[prior];
+  const diffPrev = ema50[cand]-ema200[cand];
   const crossing = (diffNow>0) !== (diffPrev>0);
   let trendDir = null;
   if(!crossing){
@@ -176,7 +178,8 @@ function runAnalysis(candles){
     confirmed = !(lows[last] < lows[cand]);
   }
 
-  // 3. LIQUIDITY SWEEP (dicek di candle 'last')
+  // 3. LIQUIDITY SWEEP (dicek di candle 'last') — wajib terjadi sebelum lanjut ke Zone Entry,
+  // sesuai alur: Candidate Swing -> Liquidity Sweep -> Zone Entry.
   let sweep = false;
   if(swingType==='HIGH'){
     sweep = highs[last] > highs[cand] && closes[last] < highs[cand];
@@ -184,30 +187,35 @@ function runAnalysis(candles){
     sweep = lows[last] < lows[cand] && closes[last] > lows[cand];
   }
   result.sweepOK = sweep;
+  result.confirmed = confirmed;
 
-  // Jika tidak confirmed DAN tidak sweep -> swing dibatalkan total
-  if(!confirmed && !sweep){
-    result.reasons.push('Swing candidate dibatalkan: candle berikutnya membuat extreme baru tanpa liquidity sweep yang valid.');
+  if(!sweep){
+    if(!confirmed){
+      result.reasons.push('Swing candidate dibatalkan: candle berikutnya membuat extreme baru tanpa liquidity sweep yang valid.');
+    } else {
+      result.reasons.push('Candidate Swing terkonfirmasi, tetapi belum terjadi liquidity sweep — menunggu stop hunt sebelum entry.');
+    }
     return {result, series:{ema50,ema200,rsiArr,atrArr}, indices:{last,cand,prior}};
   }
 
   // 4. ZONE ENTRY via fibonacci retracement
   const lookback = 30;
   const startLB = Math.max(0, cand-lookback);
-  let A, B, entryLow, entryHigh, slPrice, swingIndexUsed=cand;
+  let A, B, entryLow, entryHigh, slPrice;
+  const atrForSL = atrArr[last] != null ? atrArr[last] : atrArr[cand];
 
   if(swingType==='HIGH'){
     B = highs[cand];
     A = Math.min(...lows.slice(startLB, cand));
     entryHigh = B - (B-A)*0.5;
     entryLow  = B - (B-A)*0.618;
-    slPrice = B + (atrArr[cand]||0)*0.5;
+    slPrice = Math.max(B, highs[last]) + atrForSL*0.5;
   } else {
     B = lows[cand];
     A = Math.max(...highs.slice(startLB, cand));
     entryLow  = B + (A-B)*0.5;
     entryHigh = B + (A-B)*0.618;
-    slPrice = B - (atrArr[cand]||0)*0.5;
+    slPrice = Math.min(B, lows[last]) - atrForSL*0.5;
   }
   const entryMid = (entryLow+entryHigh)/2;
   const risk = Math.abs(entryMid - slPrice);
